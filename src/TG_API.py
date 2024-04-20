@@ -29,30 +29,15 @@ def remove_keyboard(message):
     api.remove_keyboard(message)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'mentor')
-def mentor_message(call):
-    api.mentor_handler(call)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == 'counselor')
-def mentor_message(call):
-    api.counselor_handler(call)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == 'h_mentor')
-def mentor_message(call):
-    api.h_mentor_handler(call)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == 'h_counselor')
-def mentor_message(call):
-    api.h_counselor_handler(call)
-
-
 # Если пользователь что-то написал, ответим
 @bot.message_handler(func=lambda message: True)
-def get_text_messages(message):
-    print(message.text)
+def text_messages(message):
+    api.text_handler(message)
+
+
+"""@bot.callback_query_handler(func=lambda call: True)
+def callback(call):
+    api.call_handler(call)"""
 
 
 # Запустим обработку событий бота

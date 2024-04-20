@@ -15,58 +15,133 @@ class TG_API:
     def get_bot(self):
         return self.bot
 
-    def start_handler(self, message):
+    @staticmethod
+    def inline_keyboard(buttons: dict):
+        keyboard = telebot.types.InlineKeyboardMarkup(row_width=len(buttons))
 
-        print(message.from_user.username, 'push START')
-        print(message.chat.id)
+        b = []
+        i = 0
+        for key, value in buttons.items():
 
-        keyboard = self.inline_keyboard()
-        self.bot.send_message(message.chat.id,
-                              "Привет! Я виртуальный бот Данил!\nКто ты, Герой?",
-                              reply_markup=keyboard)
+            button = telebot.types.InlineKeyboardButton(value, callback_data=key)
+            b.append(button)
 
-    def inline_keyboard(self):
+            i += 1
+            if i > 1:
+                keyboard.add(*b)
+                b.clear()
+                i = 0
 
-        buttons = telebot.types.InlineKeyboardMarkup(row_width=4)
-        button_1 = telebot.types.InlineKeyboardButton("Наставник", callback_data='mentor')
-        button_2 = telebot.types.InlineKeyboardButton("Вожатая", callback_data='counselor')
-        button_3 = telebot.types.InlineKeyboardButton("Старший наставник", callback_data='h_mentor')
-        button_4 = telebot.types.InlineKeyboardButton("Старшая вожатая", callback_data='h_counselor')
-        buttons.add(button_1, button_2)
-        buttons.add(button_3, button_4)
+        if i > 0:
+            keyboard.add(*b)
 
-        return buttons
+        return keyboard
 
-    def reply_keyboard(self):
+    @staticmethod
+    def reply_keyboard(buttons: list):
+        keyboard = telebot.types.ReplyKeyboardMarkup(row_width=len(buttons))
 
-        keyboard = telebot.types.ReplyKeyboardMarkup(row_width=4)
-        button_1 = telebot.types.KeyboardButton("Наставник")
-        button_2 = telebot.types.KeyboardButton("Вожатая")
-        button_3 = telebot.types.KeyboardButton("Старший наставник")
-        button_4 = telebot.types.KeyboardButton("Старшая вожатая")
-        keyboard.add(button_1, button_2)
-        keyboard.add(button_3, button_4)
+        b = []
+        i = 0
+        for text in buttons:
+            button = telebot.types.KeyboardButton(text)
+            b.append(button)
+
+            i += 1
+            if i > 1:
+                keyboard.add(*b)
+                b.clear()
+                i = 0
+
+        if i > 0:
+            keyboard.add(*b)
 
         return keyboard
 
     def remove_keyboard(self, message):
         keyboard = telebot.types.ReplyKeyboardRemove()
         self.bot.send_message(message.chat.id,
-                              'Удаляю клавиатуру',
+                              '.',
                               reply_markup=keyboard)
 
-    def mentor_handler(self, call):
-        self.bot.send_message(call.message.chat.id, f'Ура наставникам!')
+    # Handlers
 
-    def counselor_handler(self, call):
-        self.bot.send_message(call.message.chat.id, f'Ура вожатым!')
+    def start_handler(self, message):
 
-    def h_mentor_handler(self, call):
-        self.bot.send_message(call.message.chat.id, f'Ура старшему!')
+        print(f'{message.from_user.username} (id {message.chat.id}) push START')
 
-    def h_counselor_handler(self, call):
-        self.bot.send_message(call.message.chat.id, f'Ура старшему!')
+        buttons = ["Наставник",
+                   "Вожатая",
+                   "Старший наставник",
+                   "Старшая вожатая"
+                   ]
 
+        keyboard = self.reply_keyboard(buttons)
 
+        self.bot.send_message(message.chat.id,
+                              "Привет! Я виртуальный бот ШГ!\nКто ты, Герой?",
+                              reply_markup=keyboard)
 
+    def text_handler(self, message):
 
+        print(message.from_user.username, 'sent:', message.text)
+
+        # можно удалить клавиатуру, можно нет
+        # при желании её можно скрыть и открыть
+        # а если удалить, то заново открыть нельзя
+        #self.remove_keyboard(message)
+
+        text = "Раз, два, три, Ура!"
+
+        if message.text == "Наставник":
+            buttons = {
+                'attendance': "Отметить явку",
+                'new_heroes': "Проверить новичков",
+                'start': "Начать заново"
+            }
+        elif message.text == "Вожатая":
+            buttons = {
+                'mom_attendance': "Отметить явку (надо?)",
+                'add_hero': "Добавить новичка",
+                'bonus': "Проверить оплату",
+                'start': "Начать заново"
+            }
+        elif message.text == "Старший наставник":
+            buttons = {
+                'check_attendance': "Проверить явку",
+                'add_hero': "Добавить новичка",
+                'new_heroes': "Проверить новичков",
+                'bonus': "Проверить бонусы",
+                'start': "Начать заново"
+            }
+        elif message.text == "Старшая вожатая":
+            buttons = {
+                'mom_check_attendance': "Проверить явку (надо?)",
+                'add_hero': "Добавить новичка",
+                'start': "Начать заново"
+            }
+        elif message.text == "Начать заново":
+            buttons = {}
+            self.start_handler(message)
+
+        elif message.text == "Отметить явку":
+            text = "Множественный опрос - по списку ребят"
+            buttons = {}
+
+        elif message.text == "Проверить явку":
+            text = "Список отделений с количеством отмеченных ребят"
+            buttons = {}
+
+        else:
+            text = "Неизвестная команда"
+            buttons = {}
+
+        keyboard = self.reply_keyboard(list(buttons.values()))
+
+        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+    """def call_handler(self, call):
+        print(call.message.from_user.username, 'call:', call.message.text)
+    """
+
+####################
